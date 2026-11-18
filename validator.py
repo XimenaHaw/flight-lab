@@ -1,13 +1,21 @@
 """Row validation: airport list loading, single-row checks, record building."""
 
-
 def load_airports(path: str) -> set[str]:
     """Read an airport list file and return the set of codes.
 
     One code per line. Strip whitespace; skip blank lines and lines
     starting with '#'.
     """
-    raise NotImplementedError
+    s = set()
+    with open(path, "r") as file:
+        line = file.readline()
+        while line:
+            if not line.strip() or line.startswith('#'):
+                continue 
+            s.add(line.strip())
+            line = file.readline()
+    print(s)
+    return s
 
 
 def validate_row(fields: list[str], airports: set[str]) -> str | None:
