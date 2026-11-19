@@ -6,6 +6,7 @@ Run from the project folder, for example:
 import sys
 import argparse
 from validator import *
+from csv_loader import *
 
 # TODO: fill in your details: plain ASCII, no spaces or underscores.
 STUDENT_ID = "251ADB044"
@@ -34,7 +35,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args()
 
     # TODO: load or parse the data, write the database and errors.log.
-    load_airports(str(args.a[0]))
+    parse_files(str(args.i[0]), load_airports(str(args.a[0])))
     # TODO: run the queries and write the response file.
     # Remember: remove and close the logging handler before returning,
     # also when returning early because of an error (use try/finally).

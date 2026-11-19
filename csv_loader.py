@@ -1,3 +1,4 @@
+import csv
 """Reading CSV files into flight records and error messages."""
 
 
@@ -13,4 +14,12 @@ def parse_files(paths: list[str], airports: set[str]) -> tuple[list[dict], list[
     Also performs the DUPLICATE_FLIGHT check across all the files.
     Does not write any files and does not log anything itself.
     """
-    raise NotImplementedError
+    # Hacer -> records error duplicates 
+    a = []
+    b = []
+    with open(paths, "r") as file:
+      data = csv.reader(file)
+      for row in data:
+        print(row)
+
+    return(a, b)
