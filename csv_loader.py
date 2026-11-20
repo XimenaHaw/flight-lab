@@ -1,4 +1,5 @@
 import csv
+from validator import *
 """Reading CSV files into flight records and error messages."""
 
 
@@ -19,7 +20,13 @@ def parse_files(paths: list[str], airports: set[str]) -> tuple[list[dict], list[
     b = []
     with open(paths, "r") as file:
       data = csv.reader(file)
+      # skip header 
+      next(data)
       for row in data:
         print(row)
+        if not row or row[0].startswith('#'):
+                continue 
+        # validate row 
+        validate_row(row, airports)
 
     return(a, b)
