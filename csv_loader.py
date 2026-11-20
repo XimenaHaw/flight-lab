@@ -19,19 +19,23 @@ def parse_files(paths: list[str], airports: set[str]) -> tuple[list[dict], list[
     records = []
     errors = []
     for path in paths:
-      with open(path, "r") as file:
-        data = csv.reader(file)
-        # skip header 
-        next(data)
-        line_number = 1
-        for row in data:
-          if not row or row[0].startswith('#'):
-                  continue 
-          # validate row 
-          result = validate_row(row, airports)
-          if result is None:
-              records.append(to_record(row))
-          else:
-              errors.append(f"<{os.path.basename(path)}>:<{line_number}>: <{result}> | {row}")
-          line_number += 1
+      try:
+        with open(path, "r") as file:
+          data = csv.reader(file)
+          # skip header 
+          try:
+            next(data)
+          except StopIteration:
+            continue
+          for row in data:
+            if not row or row[0].startswith('#'):
+                    continue 
+            # validate row 
+            result = validate_row(row, airports)
+            if result is None:
+                records.append(to_record(row))
+            else:
+                errors.append(f"{os.path.basename(path)}:{data.line_num}: {result} | {row}")
+      except OSError:
+        raise
     return(records, errors)

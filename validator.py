@@ -1,5 +1,6 @@
 import re
 import datetime 
+import math
 """Row validation: airport list loading, single-row checks, record building."""
 
 def load_airports(path: str) -> set[str]:
@@ -9,14 +10,18 @@ def load_airports(path: str) -> set[str]:
     starting with '#'.
     """
     s = set()
-    with open(path, "r") as file:
-        line = file.readline()
-        while line:
-            if not line.strip() or line.startswith('#'):
-                continue 
-            s.add(line.strip())
+    try:
+        with open(path, "r") as file:
             line = file.readline()
-    return s
+            while line:
+                if not line.strip() or line.startswith('#'):
+                    line = file.readline()
+                    continue 
+                s.add(line.strip())
+                line = file.readline()
+        return s
+    except OSError:
+        raise
 
 
 def validate_row(fields: list[str], airports: set[str]) -> str | None:
@@ -29,7 +34,7 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
     # Checks, in order
     # 1. WRONG_FIELD_COUNT : the row does not have exactly 6 fields.
     if len(fields) != 6:
-        return ("RONG_FIELD_COUNT")
+        return ("WRONG_FIELD_COUNT")
 
     #2. MISSING_FIELD : any field is empty after stripping.
     for x in fields:
@@ -37,7 +42,7 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
             return ("MISSING_FIELD")
 
     #3. INVALID_FLIGHT_ID : flight_id is not 2–8 ASCII letters or digits ( ^[A-Za-z0-9]{2,8}$ ).
-    if not fields[0].isalnum() or not fields[0].isascii() or not (len(fields[0]) >= 2 and len(fields[0]) <= 8):
+    if not fields[0].isalnum()or not fields[0].isupper() or not fields[0].isascii() or not (len(fields[0]) >= 2 and len(fields[0]) <= 8):
         return ("INVALID_FLIGHT_ID")
 
     #4. INVALID_ORIGIN : origin is not 3 uppercase ASCII letters, or is not in the airport list.
@@ -77,8 +82,10 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
     #10. INVALID_PRICE : price cannot be converted with float() , or the result is not finite ( nan , inf ).
     try:
         float(fields[5])
+        if math.isfinite(float(fields[5])):
+            return ("INVALID_PRICE")
     except:
-        return ("INVALID_PRIC")
+        return ("INVALID_PRICE")
     
     #11. NON_POSITIVE_PRICE : price is zero or negative.
     if float(fields[5]) <= 0:
@@ -97,10 +104,10 @@ def to_record(fields: list[str]) -> dict:
     arrival_datetime (stripped strings) and price (float).
     """
     return {
-        "flight_id" : list[0],
-        "origin" : list[1],
-        "destination" : list[2],
-        "departure_datetime" : list[3],
-        "arrival_datetime" : list[4],
-        "price" : list[5]
+        "flight_id" : fields[0],
+        "origin" : fields[1],
+        "destination" : fields[2],
+        "departure_datetime" : fields[3],
+        "arrival_datetime" : fields[4],
+        "price" : fields[5]
     }

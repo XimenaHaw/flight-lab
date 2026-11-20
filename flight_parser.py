@@ -8,6 +8,7 @@ import sys
 import logging
 import json
 import pathlib
+import datetime
 from validator import *
 from csv_loader import *
 from query import *
@@ -45,14 +46,17 @@ def main(argv: list[str] | None = None) -> int:
         parser.error('No data source added. One of -i/-d/-j required.')
 
     # load or parse the data, write the database and errors.log.
-
-    if args.i is not None:
-        records, errors = parse_files([args.i[0]], load_airports(str(args.a[0])))
-    elif args.d is not None:
-        records, errors = parse_files([f for f in sorted(pathlib.Path(args.d[0]).glob("*.csv"))], load_airports(str(args.a[0])))
-    else:
-        with open(str(args.j[0]), "r") as file:
-            records = json.load(file)
+    try:
+        if args.i is not None:
+            records, errors = parse_files([args.i[0]], load_airports(str(args.a[0])))
+        elif args.d is not None:
+            records, errors = parse_files([f for f in sorted(str(pathlib.Path(args.d[0]).glob("*.csv")))], load_airports(str(args.a[0])))
+        else:
+            with open(str(args.j[0]), "r") as file:
+                records = json.load(file)
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
 
     logger = logging.getLogger("flight_parser")
     logger.setLevel(logging.INFO)
@@ -73,7 +77,10 @@ def main(argv: list[str] | None = None) -> int:
 
     # run the queries and write the response file.
         query_results = run_queries(records, data)
-
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
+        name = f"response_{STUDENT_ID}_{FIRST_NAME}_{LAST_NAME}_{timestamp}"
+        with open(name, 'w') as f:
+            json.dump(query_results, f)
     # Remember: remove and close the logging handler before returning,
     # also when returning early because of an error (use try/finally).
 
