@@ -14,7 +14,7 @@ def load_airports(path: str) -> set[str]:
         with open(path, "r") as file:
             line = file.readline()
             while line:
-                if not line.strip() or line.startswith('#'):
+                if not line.strip() or line.strip().startswith('#'):
                     line = file.readline()
                     continue 
                 s.add(line.strip())
@@ -35,6 +35,8 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
     # 1. WRONG_FIELD_COUNT : the row does not have exactly 6 fields.
     if len(fields) != 6:
         return ("WRONG_FIELD_COUNT")
+    
+    fields = [field.strip() for field in fields]
 
     #2. MISSING_FIELD : any field is empty after stripping.
     for x in fields:
@@ -42,15 +44,15 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
             return ("MISSING_FIELD")
 
     #3. INVALID_FLIGHT_ID : flight_id is not 2–8 ASCII letters or digits ( ^[A-Za-z0-9]{2,8}$ ).
-    if not fields[0].isalnum()or not fields[0].isupper() or not fields[0].isascii() or not (len(fields[0]) >= 2 and len(fields[0]) <= 8):
+    if not fields[0].isalnum() or not fields[0].isascii() or not (len(fields[0]) >= 2 and len(fields[0]) <= 8):
         return ("INVALID_FLIGHT_ID")
 
     #4. INVALID_ORIGIN : origin is not 3 uppercase ASCII letters, or is not in the airport list.
-    if len(fields[1]) != 3 or not fields[1].isascii() or fields[1] not in airports:
+    if len(fields[1]) != 3 or not fields[1].isascii() or not fields[1].isalpha() or not fields[1].isupper() or fields[1] not in airports:
         return ("INVALID_ORIGIN")
 
     #5. INVALID_DESTINATION : the same rule for destination .
-    if len(fields[2]) != 3 or not fields[2].isascii() or fields[2] not in airports:
+    if len(fields[2]) != 3 or not fields[2].isascii() or not fields[2].isalpha() or not fields[2].isupper() or fields[2] not in airports:
         return ("INVALID_DESTINATION")
 
     #6. SAME_ORIGIN_DESTINATION : origin equals destination .
@@ -60,20 +62,18 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
     #7. INVALID_DEPARTURE : departure_datetime is not a real date and time written exactly as YYYY-MM-DD HH:MM (zero-padded, 24-hour, single space).
     try:
         datetime.datetime.strptime(fields[3], "%Y-%m-%d %H:%M")
+        if not re.fullmatch(r"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$", fields[3]):
+            return ("INVALID_DEPARTURE")
     except:
         return ("INVALID_DEPARTURE")
-    finally:
-        if not re.match(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$", fields[3]):
-            return ("INVALID_DEPARTURE")
 
     #8. INVALID_ARRIVAL : the same rule for arrival_datetime.
     try:
         datetime.datetime.strptime(fields[4], "%Y-%m-%d %H:%M")
-    except:
-        return ("INVALID_ARRIVAL")
-    finally:
-        if not re.match(r"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$", fields[4]):
+        if not re.fullmatch(r"^[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$", fields[4]):
             return ("INVALID_ARRIVAL")
+    except ValueError:
+        return ("INVALID_ARRIVAL")
     
     #9. ARRIVAL_NOT_AFTER_DEPARTURE : arrival is equal to or earlier than departure.
     if datetime.datetime.strptime(fields[4], "%Y-%m-%d %H:%M") <= datetime.datetime.strptime(fields[3], "%Y-%m-%d %H:%M"):
@@ -81,10 +81,9 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
     
     #10. INVALID_PRICE : price cannot be converted with float() , or the result is not finite ( nan , inf ).
     try:
-        float(fields[5])
-        if math.isfinite(float(fields[5])):
+        if not math.isfinite(float(fields[5])):
             return ("INVALID_PRICE")
-    except:
+    except ValueError:
         return ("INVALID_PRICE")
     
     #11. NON_POSITIVE_PRICE : price is zero or negative.
@@ -103,11 +102,12 @@ def to_record(fields: list[str]) -> dict:
     Keys: flight_id, origin, destination, departure_datetime,
     arrival_datetime (stripped strings) and price (float).
     """
+    fields = [field.strip() for field in fields]
     return {
         "flight_id" : fields[0],
         "origin" : fields[1],
         "destination" : fields[2],
         "departure_datetime" : fields[3],
         "arrival_datetime" : fields[4],
-        "price" : fields[5]
+        "price" : float(fields[5])
     }
