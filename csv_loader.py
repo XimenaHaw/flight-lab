@@ -15,18 +15,23 @@ def parse_files(paths: list[str], airports: set[str]) -> tuple[list[dict], list[
     Also performs the DUPLICATE_FLIGHT check across all the files.
     Does not write any files and does not log anything itself.
     """
-    # Hacer -> records error duplicates 
-    a = []
+    records = []
     b = []
     with open(paths, "r") as file:
       data = csv.reader(file)
       # skip header 
       next(data)
       for row in data:
-        print(row)
         if not row or row[0].startswith('#'):
                 continue 
         # validate row 
-        validate_row(row, airports)
-
-    return(a, b)
+        result = validate_row(row, airports)
+        if result is None:
+            records.append(to_record(row))
+        else:
+            b.append(row)
+    print("good")
+    print(records)
+    print("bad")
+    print(b)
+    return(records, b)

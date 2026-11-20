@@ -54,7 +54,7 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
 
     #7. INVALID_DEPARTURE : departure_datetime is not a real date and time written exactly as YYYY-MM-DD HH:MM (zero-padded, 24-hour, single space).
     try:
-        fields[3].strptime
+        datetime.datetime.strptime(fields[3], "%Y-%m-%d %H:%M")
     except:
         return ("Error #7")
     finally:
@@ -63,7 +63,7 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
 
     #8. INVALID_ARRIVAL : the same rule for arrival_datetime.
     try:
-        fields[4].strptime
+        datetime.datetime.strptime(fields[4], "%Y-%m-%d %H:%M")
     except:
         return ("Error #8")
     finally:
@@ -71,11 +71,13 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
             return ("Error #8")
     
     #9. ARRIVAL_NOT_AFTER_DEPARTURE : arrival is equal to or earlier than departure.
-    if datetime.datetime.strptime(fields[4], "%Y-%m-%d %H:%M") >= datetime.datetime.strptime(fields[3], "%Y-%m-%d %H:%M"):
+    if datetime.datetime.strptime(fields[4], "%Y-%m-%d %H:%M") <= datetime.datetime.strptime(fields[3], "%Y-%m-%d %H:%M"):
         return ("Error in #9")
     
     #10. INVALID_PRICE : price cannot be converted with float() , or the result is not finite ( nan , inf ).
-    if not float(fields[5]):
+    try:
+        float(fields[5])
+    except:
         return ("Error in #10")
     
     #11. NON_POSITIVE_PRICE : price is zero or negative.
@@ -94,4 +96,11 @@ def to_record(fields: list[str]) -> dict:
     Keys: flight_id, origin, destination, departure_datetime,
     arrival_datetime (stripped strings) and price (float).
     """
-    raise NotImplementedError
+    return {
+        "flight_id" : list[0],
+        "origin" : list[1],
+        "destination" : list[2],
+        "departure_datetime" : list[3],
+        "arrival_datetime" : list[4],
+        "price" : list[5]
+    }
