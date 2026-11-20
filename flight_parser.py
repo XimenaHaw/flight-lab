@@ -7,7 +7,7 @@ import argparse
 import sys
 import logging
 import json
-import glob
+import pathlib
 from validator import *
 from csv_loader import *
 from query import *
@@ -47,16 +47,16 @@ def main(argv: list[str] | None = None) -> int:
     # load or parse the data, write the database and errors.log.
 
     if args.i is not None:
-        records, errors = parse_files(str(args.i[0]), load_airports(str(args.a[0])))
+        records, errors = parse_files([args.i[0]], load_airports(str(args.a[0])))
     elif args.d is not None:
-        records, errors = parse_files((glob.glob(args.d[0] + "*.csv").sort), load_airports(str(args.a[0])))
+        records, errors = parse_files([f for f in sorted(pathlib.Path(args.d[0]).glob("*.csv"))], load_airports(str(args.a[0])))
     else:
         with open(str(args.j[0]), "r") as file:
             records = json.load(file)
 
     logger = logging.getLogger("flight_parser")
     logger.setLevel(logging.INFO)
-    handler = logging.FileHandler(records, mode="w", encoding="utf-8")
+    handler = logging.FileHandler("errors.log", mode="w", encoding="utf-8")
     handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
     try:
         logger.addHandler(handler)
