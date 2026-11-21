@@ -30,13 +30,15 @@ def parse_files(paths: list[str], airports: set[str]) -> tuple[list[dict], list[
           for row in data:
             if not row or row[0].strip().startswith('#'):
                     continue 
-            # validate row
-            result = duplicate_flight(row, records) 
+            # validate row 
             result = validate_row(row, airports)
-            if result is None:
+            if result is None and duplicate_flight(row, records) is None:
                 records.append(to_record(row))
             else:
-                errors.append(f"{os.path.basename(path)}:{data.line_num}: {result} | {row}")
+                if result is not None:
+                  errors.append(f"{os.path.basename(path)}:{data.line_num}: {result} | {row}")
+                else:
+                   errors.append(f"{os.path.basename(path)}:{data.line_num}: {duplicate_flight(row, records)} | {row}")
       except OSError:
         raise
     return(records, errors)

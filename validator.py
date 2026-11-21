@@ -109,7 +109,7 @@ def to_record(fields: list[str]) -> dict:
         "price" : float(fields[5])
     }
 
-def duplicate_flight(row: list[str], records: dict) -> str | None:
+def duplicate_flight(row: list[str], records: list[dict]) -> str | None:
     for record in records:
         if record.get("flight_id") == row[0].strip() and record.get("departure_datetime") == row[3].strip():
         #12. DUPLICATE_FLIGHT : an earlier valid row (in this file or an earlier file of the same run) has the same flight_id and the same departure_datetime. Checked only in parse_files , after checks 1–11 pass.   
