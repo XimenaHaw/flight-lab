@@ -13,7 +13,7 @@ from validator import *
 from csv_loader import *
 from query import *
 
-# TODO: fill in your details: plain ASCII, no spaces or underscores.
+# fill in your details: plain ASCII, no spaces or underscores.
 STUDENT_ID = "251ADB044"
 FIRST_NAME = "XimenaMaria"
 LAST_NAME = "HawithGarcia"

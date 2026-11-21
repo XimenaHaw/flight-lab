@@ -8,7 +8,7 @@ def run_query(db: list[dict], query: dict) -> dict:
     Invalid query: {"query": query, "error": "INVALID_QUERY", "matches": []}
     """
     matches = []
-    db_keys = list[0].keys()
+    db_keys = db[0].keys()
     query_keys = query.keys()
     if not set(query_keys).issubset(db_keys):
         return {"query": query,

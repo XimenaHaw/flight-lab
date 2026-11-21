@@ -88,10 +88,7 @@ def validate_row(fields: list[str], airports: set[str]) -> str | None:
     
     #11. NON_POSITIVE_PRICE : price is zero or negative.
     if float(fields[5]) <= 0:
-        return ("NON_POSITIVE_PRICE")
-
-    #12. DUPLICATE_FLIGHT : an earlier valid row (in this file or an earlier file of the same run) has the same flight_id and the same departure_datetime. Checked only in parse_files , after checks 1–11 pass.
-    
+        return ("NON_POSITIVE_PRICE")    
     
     return None
 
@@ -111,3 +108,10 @@ def to_record(fields: list[str]) -> dict:
         "arrival_datetime" : fields[4],
         "price" : float(fields[5])
     }
+
+def duplicate_flight(row: list[str], records: dict) -> str | None:
+    for record in records:
+        if record.get("flight_id") == row[0].strip() and record.get("departure_datetime") == row[3].strip():
+        #12. DUPLICATE_FLIGHT : an earlier valid row (in this file or an earlier file of the same run) has the same flight_id and the same departure_datetime. Checked only in parse_files , after checks 1–11 pass.   
+            return "DUPLICATE_FLIGHT"
+    return None

@@ -28,9 +28,10 @@ def parse_files(paths: list[str], airports: set[str]) -> tuple[list[dict], list[
           except StopIteration:
             continue
           for row in data:
-            if not row or row[0].startswith('#'):
+            if not row or row[0].strip().startswith('#'):
                     continue 
-            # validate row 
+            # validate row
+            result = duplicate_flight(row, records) 
             result = validate_row(row, airports)
             if result is None:
                 records.append(to_record(row))
